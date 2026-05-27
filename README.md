@@ -4,6 +4,25 @@ External Foundry VTT module for Pokemon Tabletop Reunited (`ptu`).
 
 It adds a custom PTR1e Rule Element named `TickHealth`.
 
+## Installation from The Forge
+
+Manifest URL:
+
+```text
+https://github.com/marcbenoitcote-star/ptr1e-tick-health/releases/latest/download/module.json
+```
+
+Steps:
+
+1. In The Forge, open **Bazaar**.
+2. Click **Install From Manifest**.
+3. Paste the Manifest URL above.
+4. If Forge tries to search the Bazaar first, disable **Install from the Bazaar if the package is found**.
+5. Click **Install Module**.
+6. Enable the module in your PTR1e world from **Manage Modules**.
+
+Important: The GitHub repository or release asset must be publicly reachable for Forge/Foundry to install it from a manifest URL. If this repository stays private, Forge will not be able to download `module.json` or `module.zip` unless a separate public release mirror is used.
+
 ## Rule Element
 
 Add this rule to any PTR1e item that can host rules, such as effects, conditions, feats, abilities, items, or moves.

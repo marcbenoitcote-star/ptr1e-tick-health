@@ -35,7 +35,7 @@ The rule is editable in the PTR1e item sheet. It supports:
 - `timing`: `turn-start` or `turn-end`
 - `label`: reason/source shown in chat
 
-If `label` is omitted, the Rule Element now falls back to the owning Item name, then to `Tick Health`, so imported or incomplete rules do not fail validation with an undefined label.
+If `label` is omitted or blank, the Rule Element now falls back to the owning Item name, then to `Tick Health`, so imported or incomplete rules do not fail validation with an invalid label.
 - `predicate`: PTR1e predicate array
 - `chatMessage`: whether to send the chat message
 

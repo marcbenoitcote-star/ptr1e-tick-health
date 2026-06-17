@@ -103,7 +103,7 @@ function registerTickHealthRuleElement() {
 
   class TickHealthRuleElement extends BaseRuleElement {
     constructor(data, item, options = {}) {
-      super({ ...data, label: data.label ?? item?.name ?? "Tick Health" }, item, options);
+      super({ ...data, label: data.label || item?.name || "Tick Health" }, item, options);
     }
 
     static defineSchema() {

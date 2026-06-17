@@ -102,6 +102,10 @@ function registerTickHealthRuleElement() {
   const BaseRuleElement = Object.getPrototypeOf(ruleElements.builtin.ActiveEffectLike);
 
   class TickHealthRuleElement extends BaseRuleElement {
+    constructor(data, item, options = {}) {
+      super({ ...data, label: data.label ?? item?.name ?? "Tick Health" }, item, options);
+    }
+
     static defineSchema() {
       const { fields } = foundry.data;
       return {
@@ -227,7 +231,7 @@ function registerTickHealthRuleElement() {
           ? "PTR1E_TICK_HEALTH.Resource.Health"
           : "PTR1E_TICK_HEALTH.Resource.TempHealth"
       );
-      const label = this.label || this.item.name;
+      const label = this.label || this.item.name || "Tick Health";
       const content = game.i18n.format(actionKey, {
         actor: this.actor.link,
         amount,

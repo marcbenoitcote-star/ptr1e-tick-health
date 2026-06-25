@@ -210,7 +210,9 @@ function registerTickHealthRuleElement(ruleElements, BaseRuleElement) {
         return;
       }
 
-      const newTempHP = Math.max(0, health.currentTempHP + delta);
+      const newTempHP = mode.direction === "gain"
+        ? Math.max(health.currentTempHP, amount)
+        : Math.max(0, health.currentTempHP + delta);
       if (newTempHP !== health.currentTempHP) {
         actorUpdates["system.tempHp.value"] = newTempHP;
         this.createChatMessage({
@@ -323,11 +325,16 @@ function registerApplyEffectOnTurnRuleElement(ruleElements, BaseRuleElement) {
       const sourceEffect = await getEffectFromUuid(uuid);
       if (!sourceEffect) return;
 
-      if (!this.allowDuplicate && actorHasEffectFromUuid(this.actor, uuid, sourceEffect)) return;
+      if (!this.allowDuplicate && actorHasEffectFromUuid(this.actor, uuid, this.item)) return;
 
-      const effectData = sourceEffect.toObject();
+      const clonedEffect = sourceEffect.clone(this.overwrites ?? {});
+      if (!(clonedEffect instanceof CONFIG.PTU.Item.documentClass)) return;
+
+      const effectData = clonedEffect.toObject();
       foundry.utils.setProperty(effectData, "flags.core.sourceId", uuid);
       foundry.utils.setProperty(effectData, "system.origin", this.actor.uuid);
+      effectData.system.effect ??= "";
+      effectData.system.effect += `<blockquote>Applied by ${this.label ?? this.item.name} from ${this.actor.name}</blockquote>`;
 
       const created = await this.actor.createEmbeddedDocuments("Item", [effectData]);
       if (created.length > 0) {
@@ -564,12 +571,11 @@ async function getEffectFromUuid(uuid) {
   return null;
 }
 
-function actorHasEffectFromUuid(actor, uuid, sourceEffect) {
-  const sourceSlug = sourceEffect.slug;
+function actorHasEffectFromUuid(actor, uuid, sourceItem) {
   return getActorItems(actor).some((item) => {
     if (!["effect", "condition"].includes(item.type)) return false;
-    if ((item.sourceId ?? item.flags?.core?.sourceId) === uuid) return true;
-    return item.type === sourceEffect.type && sourceSlug && item.slug === sourceSlug;
+    if (item.id === sourceItem?.id) return false;
+    return (item.sourceId ?? item.flags?.core?.sourceId) === uuid;
   });
 }
 

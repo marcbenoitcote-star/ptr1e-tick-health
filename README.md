@@ -122,7 +122,7 @@ It supports:
 - `timing`: `turn-start` or `turn-end`
 - `label`: reason/source shown in chat
 - `predicate`: PTR1e predicate array
-- `allowDuplicate`: if `false`, the effect is not applied again when the actor already has the same source UUID or slug
+- `allowDuplicate`: if `false`, the effect is not applied again when the actor already has another effect from the same source UUID
 - `chatMessage`: whether to send the chat message
 
 Apply an effect at the target actor's turn start:
@@ -159,6 +159,7 @@ Apply an effect at the target actor's turn end:
 - The final amount is `value * floor(actor.system.health.max * fraction)`.
 - HP is clamped between `0` and `system.health.max` by default.
 - Temporary HP never goes below `0`.
+- Temporary HP gains are capped to the rule's calculated bonus. If a rule grants 10 temporary HP and the actor already has 10 or more, it does not stack another 10 on the next turn. If the actor has less than 10, it refills only up to 10.
 - Turn start uses PTR1e's native rule callback.
 - Turn end is handled through the `ptu.endTurn` hook.
 - Chat messages are whispered to the actor owners and GMs.

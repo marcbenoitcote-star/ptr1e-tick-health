@@ -122,8 +122,9 @@ It supports:
 - `timing`: `turn-start` or `turn-end`
 - `label`: reason/source shown in chat
 - `predicate`: PTR1e predicate array
-- `allowDuplicate`: if `false`, the effect is not applied again when the actor already has another effect from the same source UUID
 - `chatMessage`: whether to send the chat message
+
+`ApplyEffectOnTurn` attempts to apply the UUID every matching turn while its predicate is true. If the applied effect should not stack, configure that behavior through the applied effect or condition itself.
 
 Apply an effect at the target actor's turn start:
 
@@ -134,7 +135,6 @@ Apply an effect at the target actor's turn start:
   "timing": "turn-start",
   "label": "Lingering Aura",
   "predicate": [],
-  "allowDuplicate": false,
   "chatMessage": true
 }
 ```
@@ -148,7 +148,6 @@ Apply an effect at the target actor's turn end:
   "timing": "turn-end",
   "label": "Delayed Condition",
   "predicate": [],
-  "allowDuplicate": false,
   "chatMessage": true
 }
 ```

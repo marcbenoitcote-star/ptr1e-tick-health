@@ -20,7 +20,6 @@
   "PTR1E_TICK_HEALTH.Field.LabelPlaceholder": "Source ou raison affichee dans le chat",
   "PTR1E_TICK_HEALTH.Field.Priority": "Priorite",
   "PTR1E_TICK_HEALTH.Field.Predicate": "Predicate",
-  "PTR1E_TICK_HEALTH.Field.AllowDuplicate": "Permettre un effet en double",
   "PTR1E_TICK_HEALTH.Field.ClampToMax": "Limiter les PV au maximum",
   "PTR1E_TICK_HEALTH.Field.ChatMessage": "Envoyer un message chat",
   "PTR1E_TICK_HEALTH.Chat.Gain": "{actor} gagne {amount} {resource} grace a {label}. ({oldValue} -> {newValue})",

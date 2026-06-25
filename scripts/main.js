@@ -291,11 +291,6 @@ function registerApplyEffectOnTurnRuleElement(ruleElements, BaseRuleElement) {
           choices: Object.keys(TIMING_ALIASES),
           initial: "turn-start"
         }),
-        allowDuplicate: new fields.BooleanField({
-          required: false,
-          nullable: false,
-          initial: false
-        }),
         chatMessage: new fields.BooleanField({
           required: false,
           nullable: false,
@@ -324,8 +319,6 @@ function registerApplyEffectOnTurnRuleElement(ruleElements, BaseRuleElement) {
 
       const sourceEffect = await getEffectFromUuid(uuid);
       if (!sourceEffect) return;
-
-      if (!this.allowDuplicate && actorHasEffectFromUuid(this.actor, uuid, this.item)) return;
 
       const clonedEffect = sourceEffect.clone(this.overwrites ?? {});
       if (!(clonedEffect instanceof CONFIG.PTU.Item.documentClass)) return;
@@ -426,7 +419,6 @@ function renderApplyEffectOnTurnRuleForms($html) {
     rule.priority ??= 100;
     rule.label ??= "";
     rule.predicate ??= [];
-    rule.allowDuplicate ??= false;
     rule.chatMessage ??= true;
 
     ruleBody.innerHTML = buildApplyEffectOnTurnRuleFormHTML(index, rule);
@@ -509,10 +501,6 @@ function buildApplyEffectOnTurnRuleFormHTML(index, rule) {
       <input type="text" name="system.rules.${index}.predicate" value="${escapeHTML(JSON.stringify(rule.predicate ?? []))}">
     </div>
     <div class="form-group">
-      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.AllowDuplicate")}</label>
-      <input type="checkbox" name="system.rules.${index}.allowDuplicate" ${rule.allowDuplicate ? "checked" : ""}>
-    </div>
-    <div class="form-group">
       <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.ChatMessage")}</label>
       <input type="checkbox" name="system.rules.${index}.chatMessage" ${rule.chatMessage ? "checked" : ""}>
     </div>
@@ -569,18 +557,6 @@ async function getEffectFromUuid(uuid) {
 
   console.warn(`${MODULE_ID} | UUID does not resolve to a PTR1e effect or condition: ${uuid}`);
   return null;
-}
-
-function actorHasEffectFromUuid(actor, uuid, sourceItem) {
-  return getActorItems(actor).some((item) => {
-    if (!["effect", "condition"].includes(item.type)) return false;
-    if (item.id === sourceItem?.id) return false;
-    return (item.sourceId ?? item.flags?.core?.sourceId) === uuid;
-  });
-}
-
-function getActorItems(actor) {
-  return actor?.items?.contents ?? Array.from(actor?.items ?? []);
 }
 
 function readActorHealth(actor, actorUpdates = {}) {

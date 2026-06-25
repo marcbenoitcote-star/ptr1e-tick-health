@@ -20,7 +20,6 @@
   "PTR1E_TICK_HEALTH.Field.LabelPlaceholder": "Source or reason shown in chat",
   "PTR1E_TICK_HEALTH.Field.Priority": "Priority",
   "PTR1E_TICK_HEALTH.Field.Predicate": "Predicate",
-  "PTR1E_TICK_HEALTH.Field.AllowDuplicate": "Allow duplicate effect",
   "PTR1E_TICK_HEALTH.Field.ClampToMax": "Clamp HP to Max",
   "PTR1E_TICK_HEALTH.Field.ChatMessage": "Send Chat Message",
   "PTR1E_TICK_HEALTH.Chat.Gain": "{actor} gains {amount} {resource} from {label}. ({oldValue} -> {newValue})",

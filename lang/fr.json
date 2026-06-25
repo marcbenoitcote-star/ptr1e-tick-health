@@ -1,6 +1,8 @@
 {
   "RULES.Types.TickHealth": "Tick Health",
   "PTU.RuleElement.TickHealth": "Tick Health",
+  "RULES.Types.ApplyEffectOnTurn": "Appliquer un effet par tour",
+  "PTU.RuleElement.ApplyEffectOnTurn": "Appliquer un effet par tour",
   "PTR1E_TICK_HEALTH.Mode.AddHealth": "Ajouter une fraction de PV",
   "PTR1E_TICK_HEALTH.Mode.SubtractHealth": "Retirer une fraction de PV",
   "PTR1E_TICK_HEALTH.Mode.AddTempHealth": "Ajouter une fraction de PV temporaires",
@@ -13,12 +15,15 @@
   "PTR1E_TICK_HEALTH.Field.Fraction": "Fraction",
   "PTR1E_TICK_HEALTH.Field.Value": "Valeur",
   "PTR1E_TICK_HEALTH.Field.Timing": "Moment",
+  "PTR1E_TICK_HEALTH.Field.EffectUuid": "UUID de l'effet",
   "PTR1E_TICK_HEALTH.Field.Label": "Label",
   "PTR1E_TICK_HEALTH.Field.LabelPlaceholder": "Source ou raison affichee dans le chat",
   "PTR1E_TICK_HEALTH.Field.Priority": "Priorite",
   "PTR1E_TICK_HEALTH.Field.Predicate": "Predicate",
+  "PTR1E_TICK_HEALTH.Field.AllowDuplicate": "Permettre un effet en double",
   "PTR1E_TICK_HEALTH.Field.ClampToMax": "Limiter les PV au maximum",
   "PTR1E_TICK_HEALTH.Field.ChatMessage": "Envoyer un message chat",
   "PTR1E_TICK_HEALTH.Chat.Gain": "{actor} gagne {amount} {resource} grace a {label}. ({oldValue} -> {newValue})",
-  "PTR1E_TICK_HEALTH.Chat.Lose": "{actor} perd {amount} {resource} a cause de {label}. ({oldValue} -> {newValue})"
+  "PTR1E_TICK_HEALTH.Chat.Lose": "{actor} perd {amount} {resource} a cause de {label}. ({oldValue} -> {newValue})",
+  "PTR1E_TICK_HEALTH.Chat.ApplyEffect": "{actor} recoit {effect} via {label}."
 }

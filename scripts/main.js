@@ -1,5 +1,6 @@
 const MODULE_ID = "ptr1e-tick-health";
 const RULE_KEY = "TickHealth";
+const APPLY_EFFECT_RULE_KEY = "ApplyEffectOnTurn";
 
 const MODE_DEFINITIONS = {
   "add-health": {
@@ -67,11 +68,11 @@ const FRACTIONS = {
 
 Hooks.once("init", () => {
   if (game.system.id !== "ptu") return;
-  registerTickHealthRuleElement();
+  registerCustomRuleElements();
 });
 
 Hooks.on("renderPTUItemSheet", (_sheet, $html) => {
-  renderTickHealthRuleForms($html);
+  renderCustomRuleForms($html);
 });
 
 Hooks.on("ptu.endTurn", async (combatant) => {
@@ -90,16 +91,21 @@ Hooks.on("ptu.endTurn", async (combatant) => {
   }
 });
 
-function registerTickHealthRuleElement() {
+function registerCustomRuleElements() {
   const ruleElements = CONFIG.PTU?.rule?.elements;
   if (!ruleElements?.custom || !ruleElements?.builtin?.ActiveEffectLike) {
     console.error(`${MODULE_ID} | PTR1e RuleElements were not available during init.`);
     return;
   }
 
-  if (ruleElements.custom[RULE_KEY]) return;
-
   const BaseRuleElement = Object.getPrototypeOf(ruleElements.builtin.ActiveEffectLike);
+
+  registerTickHealthRuleElement(ruleElements, BaseRuleElement);
+  registerApplyEffectOnTurnRuleElement(ruleElements, BaseRuleElement);
+}
+
+function registerTickHealthRuleElement(ruleElements, BaseRuleElement) {
+  if (ruleElements.custom[RULE_KEY]) return;
 
   class TickHealthRuleElement extends BaseRuleElement {
     constructor(data, item, options = {}) {
@@ -259,6 +265,104 @@ function registerTickHealthRuleElement() {
   console.log(`${MODULE_ID} | Registered ${RULE_KEY} Rule Element.`);
 }
 
+function registerApplyEffectOnTurnRuleElement(ruleElements, BaseRuleElement) {
+  if (ruleElements.custom[APPLY_EFFECT_RULE_KEY]) return;
+
+  class ApplyEffectOnTurnRuleElement extends BaseRuleElement {
+    constructor(data, item, options = {}) {
+      super({ ...data, label: data.label || item?.name || "Apply Effect On Turn" }, item, options);
+    }
+
+    static defineSchema() {
+      const { fields } = foundry.data;
+      return {
+        ...super.defineSchema(),
+        uuid: new fields.StringField({
+          required: false,
+          nullable: false,
+          blank: true,
+          initial: ""
+        }),
+        timing: new fields.StringField({
+          required: false,
+          nullable: false,
+          choices: Object.keys(TIMING_ALIASES),
+          initial: "turn-start"
+        }),
+        allowDuplicate: new fields.BooleanField({
+          required: false,
+          nullable: false,
+          initial: false
+        }),
+        chatMessage: new fields.BooleanField({
+          required: false,
+          nullable: false,
+          initial: true
+        })
+      };
+    }
+
+    async onTurnStart() {
+      if (TIMING_ALIASES[this.timing] === "turn-start") {
+        await this.applyEffect();
+      }
+    }
+
+    async onTurnEnd() {
+      if (TIMING_ALIASES[this.timing] === "turn-end") {
+        await this.applyEffect();
+      }
+    }
+
+    async applyEffect() {
+      if (!this.test(this.actor.getRollOptions())) return;
+
+      const uuid = String(this.resolveInjectedProperties(this.uuid ?? "") ?? "").trim();
+      if (!uuid) return;
+
+      const sourceEffect = await getEffectFromUuid(uuid);
+      if (!sourceEffect) return;
+
+      if (!this.allowDuplicate && actorHasEffectFromUuid(this.actor, uuid, sourceEffect)) return;
+
+      const effectData = sourceEffect.toObject();
+      foundry.utils.setProperty(effectData, "flags.core.sourceId", uuid);
+      foundry.utils.setProperty(effectData, "system.origin", this.actor.uuid);
+
+      const created = await this.actor.createEmbeddedDocuments("Item", [effectData]);
+      if (created.length > 0) {
+        await this.createChatMessage(created[0]);
+      }
+    }
+
+    async createChatMessage(effect) {
+      if (!this.chatMessage) return;
+
+      const label = this.label || this.item.name || "Apply Effect On Turn";
+      const content = game.i18n.format("PTR1E_TICK_HEALTH.Chat.ApplyEffect", {
+        actor: this.actor.link,
+        effect: effect.link,
+        label
+      });
+
+      const recipients = new Set(
+        game.users
+          .filter((user) => user.isGM || this.actor.testUserPermission(user, "OWNER"))
+          .map((user) => user.id)
+      );
+
+      await ChatMessage.create({
+        content,
+        speaker: ChatMessage.getSpeaker({ actor: this.actor, token: this.token }),
+        whisper: Array.from(recipients)
+      });
+    }
+  }
+
+  ruleElements.custom[APPLY_EFFECT_RULE_KEY] = ApplyEffectOnTurnRuleElement;
+  console.log(`${MODULE_ID} | Registered ${APPLY_EFFECT_RULE_KEY} Rule Element.`);
+}
+
 function resolveMode(mode, resource) {
   if (MODE_DEFINITIONS[mode]) return MODE_DEFINITIONS[mode];
 
@@ -269,6 +373,11 @@ function resolveMode(mode, resource) {
     : legacyDirection;
 
   return MODE_DEFINITIONS[resolvedMode] ?? MODE_DEFINITIONS["add-health"];
+}
+
+function renderCustomRuleForms($html) {
+  renderTickHealthRuleForms($html);
+  renderApplyEffectOnTurnRuleForms($html);
 }
 
 function renderTickHealthRuleForms($html) {
@@ -292,6 +401,28 @@ function renderTickHealthRuleForms($html) {
     rule.clampToMax ??= true;
 
     ruleBody.innerHTML = buildRuleFormHTML(index, rule);
+  }
+}
+
+function renderApplyEffectOnTurnRuleForms($html) {
+  const html = $html[0] ?? $html;
+  if (!html?.querySelectorAll) return;
+
+  for (const ruleBody of html.querySelectorAll(`.rule-body[data-key="${APPLY_EFFECT_RULE_KEY}"]`)) {
+    const index = Number(ruleBody.dataset.idx);
+    const textarea = ruleBody.querySelector(`textarea[name="system.rules.${index}"]`);
+    if (!textarea) continue;
+
+    const rule = safeParseJSON(textarea.value, { key: APPLY_EFFECT_RULE_KEY });
+    rule.uuid ??= "";
+    rule.timing = TIMING_ALIASES[rule.timing] ?? "turn-start";
+    rule.priority ??= 100;
+    rule.label ??= "";
+    rule.predicate ??= [];
+    rule.allowDuplicate ??= false;
+    rule.chatMessage ??= true;
+
+    ruleBody.innerHTML = buildApplyEffectOnTurnRuleFormHTML(index, rule);
   }
 }
 
@@ -344,6 +475,43 @@ function buildRuleFormHTML(index, rule) {
   `;
 }
 
+function buildApplyEffectOnTurnRuleFormHTML(index, rule) {
+  return `
+    <input type="hidden" name="system.rules.${index}.key" value="${APPLY_EFFECT_RULE_KEY}">
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.EffectUuid")}</label>
+      <input type="text" name="system.rules.${index}.uuid" value="${escapeHTML(rule.uuid)}" placeholder="Compendium.ptu.effects.Item...">
+    </div>
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.Timing")}</label>
+      <select name="system.rules.${index}.timing">
+        ${optionHTML("turn-start", game.i18n.localize("PTR1E_TICK_HEALTH.Timing.TurnStart"), rule.timing === "turn-start")}
+        ${optionHTML("turn-end", game.i18n.localize("PTR1E_TICK_HEALTH.Timing.TurnEnd"), rule.timing === "turn-end")}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.Label")}</label>
+      <input type="text" name="system.rules.${index}.label" value="${escapeHTML(rule.label)}" placeholder="${escapeHTML(game.i18n.localize("PTR1E_TICK_HEALTH.Field.LabelPlaceholder"))}">
+    </div>
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.Priority")}</label>
+      <input type="number" name="system.rules.${index}.priority" value="${escapeHTML(rule.priority)}" step="1">
+    </div>
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.Predicate")}</label>
+      <input type="text" name="system.rules.${index}.predicate" value="${escapeHTML(JSON.stringify(rule.predicate ?? []))}">
+    </div>
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.AllowDuplicate")}</label>
+      <input type="checkbox" name="system.rules.${index}.allowDuplicate" ${rule.allowDuplicate ? "checked" : ""}>
+    </div>
+    <div class="form-group">
+      <label>${game.i18n.localize("PTR1E_TICK_HEALTH.Field.ChatMessage")}</label>
+      <input type="checkbox" name="system.rules.${index}.chatMessage" ${rule.chatMessage ? "checked" : ""}>
+    </div>
+  `;
+}
+
 function normalizeModeForForm(rule) {
   return resolveMode(rule.mode, rule.resource).resource === "tempHp"
     ? resolveMode(rule.mode, rule.resource).direction === "gain"
@@ -380,6 +548,33 @@ function escapeHTML(value) {
     '"': "&quot;",
     "'": "&#39;"
   })[character]);
+}
+
+async function getEffectFromUuid(uuid) {
+  try {
+    const effect = await fromUuid(uuid);
+    if (effect instanceof CONFIG.PTU.Item.documentClass && ["effect", "condition"].includes(effect.type)) {
+      return effect;
+    }
+  } catch (error) {
+    console.error(`${MODULE_ID} | Could not load effect UUID ${uuid}.`, error);
+  }
+
+  console.warn(`${MODULE_ID} | UUID does not resolve to a PTR1e effect or condition: ${uuid}`);
+  return null;
+}
+
+function actorHasEffectFromUuid(actor, uuid, sourceEffect) {
+  const sourceSlug = sourceEffect.slug;
+  return getActorItems(actor).some((item) => {
+    if (!["effect", "condition"].includes(item.type)) return false;
+    if ((item.sourceId ?? item.flags?.core?.sourceId) === uuid) return true;
+    return item.type === sourceEffect.type && sourceSlug && item.slug === sourceSlug;
+  });
+}
+
+function getActorItems(actor) {
+  return actor?.items?.contents ?? Array.from(actor?.items ?? []);
 }
 
 function readActorHealth(actor, actorUpdates = {}) {

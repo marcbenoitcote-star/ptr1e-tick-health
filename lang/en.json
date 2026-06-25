@@ -1,6 +1,8 @@
 {
   "RULES.Types.TickHealth": "Tick Health",
   "PTU.RuleElement.TickHealth": "Tick Health",
+  "RULES.Types.ApplyEffectOnTurn": "Apply Effect On Turn",
+  "PTU.RuleElement.ApplyEffectOnTurn": "Apply Effect On Turn",
   "PTR1E_TICK_HEALTH.Mode.AddHealth": "Add Tick of Health",
   "PTR1E_TICK_HEALTH.Mode.SubtractHealth": "Subtract Tick of Health",
   "PTR1E_TICK_HEALTH.Mode.AddTempHealth": "Add Tick of Temporary Health",
@@ -13,12 +15,15 @@
   "PTR1E_TICK_HEALTH.Field.Fraction": "Fraction",
   "PTR1E_TICK_HEALTH.Field.Value": "Value",
   "PTR1E_TICK_HEALTH.Field.Timing": "Timing",
+  "PTR1E_TICK_HEALTH.Field.EffectUuid": "Effect UUID",
   "PTR1E_TICK_HEALTH.Field.Label": "Label",
   "PTR1E_TICK_HEALTH.Field.LabelPlaceholder": "Source or reason shown in chat",
   "PTR1E_TICK_HEALTH.Field.Priority": "Priority",
   "PTR1E_TICK_HEALTH.Field.Predicate": "Predicate",
+  "PTR1E_TICK_HEALTH.Field.AllowDuplicate": "Allow duplicate effect",
   "PTR1E_TICK_HEALTH.Field.ClampToMax": "Clamp HP to Max",
   "PTR1E_TICK_HEALTH.Field.ChatMessage": "Send Chat Message",
   "PTR1E_TICK_HEALTH.Chat.Gain": "{actor} gains {amount} {resource} from {label}. ({oldValue} -> {newValue})",
-  "PTR1E_TICK_HEALTH.Chat.Lose": "{actor} loses {amount} {resource} from {label}. ({oldValue} -> {newValue})"
+  "PTR1E_TICK_HEALTH.Chat.Lose": "{actor} loses {amount} {resource} from {label}. ({oldValue} -> {newValue})",
+  "PTR1E_TICK_HEALTH.Chat.ApplyEffect": "{actor} gains {effect} from {label}."
 }

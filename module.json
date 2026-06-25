@@ -1,16 +1,16 @@
 {
   "id": "ptr1e-tick-health",
   "title": "PTR1e Tick Health Automation",
-  "description": "Adds PTR1e Rule Elements for gaining or losing fractional health or temporary health on turn start or turn end.",
+  "description": "Adds PTR1e Rule Elements for gaining or losing fractional health or temporary health and applying effect UUIDs on turn start or turn end.",
   "authors": [
     {
       "name": "Pokemon PTU Custom Server"
     }
   ],
-  "version": "0.2.2",
+  "version": "0.3.0",
   "url": "https://github.com/marcbenoitcote-star/ptr1e-tick-health",
   "manifest": "https://github.com/marcbenoitcote-star/ptr1e-tick-health/releases/latest/download/module.json",
-  "download": "https://github.com/marcbenoitcote-star/ptr1e-tick-health/releases/download/v0.2.2/module.zip",
+  "download": "https://github.com/marcbenoitcote-star/ptr1e-tick-health/releases/download/v0.3.0/module.zip",
   "compatibility": {
     "minimum": "13.345",
     "verified": "13.350"

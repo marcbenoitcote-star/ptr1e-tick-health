@@ -2,7 +2,7 @@
 
 External Foundry VTT module for Pokemon Tabletop Reunited (`ptu`).
 
-It adds a custom PTR1e Rule Element named `TickHealth`.
+It adds custom PTR1e Rule Elements named `TickHealth` and `ApplyEffectOnTurn`.
 
 ## Installation from The Forge
 
@@ -23,7 +23,9 @@ Steps:
 
 Important: The GitHub repository or release asset must be publicly reachable for Forge/Foundry to install it from a manifest URL. If this repository stays private, Forge will not be able to download `module.json` or `module.zip` unless a separate public release mirror is used.
 
-## Rule Element
+## Rule Elements
+
+### TickHealth
 
 Add this rule to any PTR1e item that can host rules, such as effects, conditions, feats, abilities, items, or moves.
 
@@ -91,6 +93,11 @@ Lose one tick of temporary HP at turn end:
 }
 ```
 
+The temporary HP modes use PTR1e's temporary HP fields:
+
+- `system.tempHp.value`
+- `system.tempHp.max`
+
 Gain two ticks only while a predicate is true:
 
 ```json
@@ -102,6 +109,47 @@ Gain two ticks only while a predicate is true:
   "timing": "turn-start",
   "label": "Healing Aura",
   "predicate": ["self:types:grass"]
+}
+```
+
+### ApplyEffectOnTurn
+
+Use this rule when an item or effect should apply another PTR1e effect or condition to its owning actor at the start or end of that actor's turn.
+
+It supports:
+
+- `uuid`: UUID of the PTR1e effect or condition to apply
+- `timing`: `turn-start` or `turn-end`
+- `label`: reason/source shown in chat
+- `predicate`: PTR1e predicate array
+- `allowDuplicate`: if `false`, the effect is not applied again when the actor already has the same source UUID or slug
+- `chatMessage`: whether to send the chat message
+
+Apply an effect at the target actor's turn start:
+
+```json
+{
+  "key": "ApplyEffectOnTurn",
+  "uuid": "Compendium.ptu.effects.Item.REPLACE_WITH_EFFECT_ID",
+  "timing": "turn-start",
+  "label": "Lingering Aura",
+  "predicate": [],
+  "allowDuplicate": false,
+  "chatMessage": true
+}
+```
+
+Apply an effect at the target actor's turn end:
+
+```json
+{
+  "key": "ApplyEffectOnTurn",
+  "uuid": "Compendium.ptu.effects.Item.REPLACE_WITH_EFFECT_ID",
+  "timing": "turn-end",
+  "label": "Delayed Condition",
+  "predicate": [],
+  "allowDuplicate": false,
+  "chatMessage": true
 }
 ```
 
